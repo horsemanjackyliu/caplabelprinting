@@ -1,0 +1,236 @@
+{
+    "_version": "1.59.0",
+    "sap.app": {
+        "id": "ns.labelprinting",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "0.0.1"
+        },
+        "title": "{{appTitle}}",
+        "description": "{{appDescription}}",
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "@sap/generator-fiori:lrop",
+            "version": "1.14.3",
+            "toolsId": "1a0f4ad0-0a4e-49c1-ac20-1c711a684a6d"
+        },
+        "dataSources": {
+            "mainService": {
+                "uri": "/odata/v4/dnservice/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "4.0"
+                }
+            }
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "OutboundDelivery-Display": {
+                    "semanticObject": "OutboundDelivery",
+                    "action": "Display",
+                    "title": "{{flpTitle}}",
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    }
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "flexEnabled": true,
+        "dependencies": {
+            "minUI5Version": "1.127.0",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.ushell": {},
+                "sap.fe.templates": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "settings": {
+                    "bundleName": "ns.labelprinting.i18n.i18n"
+                }
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            },
+            "@i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            }
+        },
+        "resources": {
+            "css": []
+        },
+        "routing": {
+            "config": {},
+            "routes": [
+                {
+                    "pattern": ":?query:",
+                    "name": "DnHeadersList",
+                    "target": "DnHeadersList"
+                },
+                {
+                    "pattern": "DnHeaders({key}):?query:",
+                    "name": "DnHeadersObjectPage",
+                    "target": "DnHeadersObjectPage"
+                },
+                {
+                    "pattern": "DnHeaders({key})/Items({key2}):?query:",
+                    "name": "DnItemsObjectPage",
+                    "target": "DnItemsObjectPage"
+                }
+            ],
+            "targets": {
+                "DnHeadersList": {
+                    "type": "Component",
+                    "id": "DnHeadersList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/DnHeaders",
+                            "variantManagement": "Page",
+                            "navigation": {
+                                "DnHeaders": {
+                                    "detail": {
+                                        "route": "DnHeadersObjectPage"
+                                    }
+                                }
+                            },
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "DnHeadersObjectPage": {
+                    "type": "Component",
+                    "id": "DnHeadersObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "editableHeaderContent": false,
+                            "contextPath": "/DnHeaders",
+                            "navigation": {
+                                "Items": {
+                                    "detail": {
+                                        "route": "DnItemsObjectPage"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "DnItemsObjectPage": {
+                    "type": "Component",
+                    "id": "DnItemsObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "editableHeaderContent": false,
+                            "contextPath": "/DnHeaders/Items",
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "PrintPreview": {
+                                            "press": ".extension.ns.labelprinting.ext.controller.DnContoller.printPreview",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "PrintPreview"
+                                        },
+                                        "Print": {
+                                            "press": ".extension.ns.labelprinting.ext.controller.DnContoller.print",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Print",
+                                            "position": {
+                                                "placement": "After",
+                                                "anchor": "PrintPreview"
+                                            }
+                                        }
+                                    },
+                                    "facets": {
+                                        "RenderTemplate": {
+                                            "template": "ns.labelprinting.ext.fragment.RenderTemplate",
+                                            "title": "{i18n>rendertemplatetitle}",
+                                            "stashed": false,
+                                            "requestGroupId": "Heroes",
+                                            "flexSettings": {
+                                                "designtime": "Default"
+                                            }
+                                        }
+                                    }
+                                },
+                                "body": {
+                                    "sections": {
+                                        "PrintPreview": {
+                                            "template": "ns.labelprinting.ext.fragment.PrintPreview",
+                                            "position": {
+                                                "placement": "After",
+                                                "anchor": "ItemDetails"
+                                            },
+                                            "title": "PrintPreview"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "extends": {
+            "extensions": {
+                "sap.ui.controllerExtensions": {
+                    "sap.fe.templates.ObjectPage.ObjectPageController#ns.labelprinting::DnItemsObjectPage": {
+                        "controllerName": "ns.labelprinting.ext.controller.DnContoller"
+                    }
+                }
+            }
+        }
+    },
+    "sap.fiori": {
+        "registrationIds": [],
+        "archeType": "transactional"
+    },
+    "sap.cloud": {
+        "public": true,
+        "service": "labelprinting"
+    }
+}

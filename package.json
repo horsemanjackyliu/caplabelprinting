@@ -1,0 +1,76 @@
+{
+    "name": "caplabelprinting",
+    "version": "1.0.0",
+    "description": "A simple CAP project.",
+    "repository": "<Add your repository here>",
+    "license": "UNLICENSED",
+    "private": true,
+    "dependencies": {
+        "@sap-cloud-sdk/connectivity": "^3.18.0",
+        "@sap-cloud-sdk/http-client": "^3.18.0",
+        "@sap-cloud-sdk/openapi": "^3.18.0",
+        "@sap-cloud-sdk/openapi-generator": "^3.18.0",
+        "@sap-cloud-sdk/resilience": "^3.18.0",
+        "@sap/cds": "^7",
+        "@sap/xssec": "^3",
+        "base64topdf": "^1.1.8",
+        "express": "^4",
+        "nodemailer": "^6.9.14"
+    },
+    "devDependencies": {
+        "@cap-js/sqlite": "^1",
+        "@sap/cds-dk": "^7",
+        "@sap/eslint-plugin-cds": "^3",
+        "@sap/ux-specification": "UI5-1.127",
+        "eslint": "^9",
+        "rimraf": "^5.0.5"
+    },
+    "scripts": {
+        "start": "cds-serve",
+        "watch-labelprinting": "cds watch --open labelprinting/webapp/index.html?sap-ui-xx-viewCache=false",
+        "undeploy": "cf undeploy caplabelprinting --delete-services --delete-service-keys --delete-service-brokers",
+        "build": "rimraf resources mta_archives && mbt build --mtar archive",
+        "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+    },
+    "cds": {
+        "requires": {
+            "API_OUTBOUND_DELIVERY_SRV_0002": {
+                "kind": "odata-v2",
+                "model": "srv/external/API_OUTBOUND_DELIVERY_SRV_0002",
+                "[development]": {
+                    "credentials": {
+                        "url": "https://my300018-api.saps4hanacloud.cn/sap/opu/odata/sap/API_OUTBOUND_DELIVERY_SRV;v=0002",
+                        "authentication": "BasicAuthentication",
+                        "username": "SPAWORKSHOP",
+                        "password": "Jl98765432198765432!"
+                    }
+                },
+                "[production]": {
+                    "credentials": {
+                        "destination": "O5PDN",
+                        "path": "/sap/opu/odata/sap/API_OUTBOUND_DELIVERY_SRV;v=0002"
+                    }
+                }
+            },
+            "[production]": {
+                "auth": "xsuaa"
+            },
+            "[hybrid]": {
+                "auth": {
+                    "kind": "mocked",
+                    "users": {
+                        "jacky": {
+                            "password": "654123",
+                            "roles": [
+                                "Viewer"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "sapux": [
+        "app/labelprinting"
+    ]
+}

@@ -1,0 +1,125 @@
+_schema-version: "3.1"
+ID: caplabelprinting
+description: A simple CAP project.
+version: 1.0.0
+modules:
+- name: caplabelprinting-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: caplabelprinting-destination
+  - name: caplabelprinting-auth
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    readiness-health-check-http-endpoint: /health
+    readiness-health-check-type: http
+  build-parameters:
+    builder: npm
+- name: caplabelprinting-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: caplabelprinting-destination
+    parameters:
+      content-target: true
+  - name: caplabelprinting_html_repo_host
+    parameters:
+      service-key:
+        name: caplabelprinting_html_repo_host-key
+  - name: caplabelprinting-auth
+    parameters:
+      service-key:
+        name: caplabelprinting-auth-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: labelprinting_caplabelprinting_html_repo_host
+          ServiceInstanceName: caplabelprinting-html5-app-host-service
+          ServiceKeyName: caplabelprinting_html_repo_host-key
+          sap.cloud.service: labelprinting
+        - Authentication: OAuth2UserTokenExchange
+          Name: labelprinting_caplabelprinting_auth
+          ServiceInstanceName: caplabelprinting-auth
+          ServiceKeyName: caplabelprinting-auth-key
+          sap.cloud.service: labelprinting
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: caplabelprinting-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: caplabelprinting_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - nslabelprinting.zip
+      name: nslabelprinting
+      target-path: resources/
+- name: nslabelprinting
+  type: html5
+  path: app/labelprinting
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: caplabelprinting-destination
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          - Authentication: NoAuthentication
+            HTML5.DynamicDestination: true
+            HTML5.ForwardAuthToken: true
+            Name: caplabelprinting-srv-api
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}
+          existing_destinations_policy: update
+    service: destination
+    service-plan: lite
+  requires:
+  - name: srv-api
+- name: caplabelprinting-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      tenant-mode: dedicated
+      xsappname: caplabelprinting-${org}-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+- name: caplabelprinting_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: caplabelprinting-html5-app-host-service
+    service-plan: app-host
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm ci
+    - npx cds build --production
