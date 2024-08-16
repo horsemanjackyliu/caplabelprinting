@@ -28,12 +28,41 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension', 'sap/ui/model/json/JSONMod
 			}
 		},
 		print: function (oEvent) {
+			let sPrintQ = this.getView().byId('ns.labelprinting::DnItemsObjectPage--fe::HeaderFacetCustomContainer::RenderTemplate--printQId').getProperty('selectedKey');
 			let sSource = this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::CustomSubSection::PrintPreview--pdfViewId").getSource();
-			fetch(sSource).then(doccont=>{
-				console.log(doccont);
-			})
-			// console.log(sSource);
-			MessageToast.show('Print Button Clicked');
+			let filename = this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::FormContainer::ItemDetails::FormElement::DataField::DeliveryDocument::Field-content").getContentDisplay().mProperties.text + this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::FormContainer::ItemDetails::FormElement::DataField::DeliveryDocumentItem::Field-content").getContentDisplay().mProperties.text + '.pdf';
+			fetch(sSource)
+				.then(response => response.blob())
+				.then(blob => {
+					// Convert the Blob to a string
+					const reader = new FileReader();
+					reader.onload = function () {
+						const dataUrl = reader.result;
+						console.log(dataUrl);
+						const base64String = dataUrl.split(',')[1];
+						console.log(base64String);
+						console.log(typeof (base64String));
+
+						let oModel = oEvent.getModel();
+						const sPrint = 'print';
+						const oFunction = oModel.bindContext(`/${sPrint}(...)`);
+						oFunction.setParameter('pdf', base64String);
+						oFunction.setParameter('fileName', filename);
+						oFunction.setParameter('printQ', sPrintQ);
+						oFunction.execute().then(function () {
+							const oContext = oFunction.getBoundContext();
+							var result = oContext.fetchValue().getResult();
+							MessageToast.show(result.value);
+						}).catch(err => {
+							console.log(err);
+						})
+					};
+					reader.readAsDataURL(blob);
+				})
+				.catch(error => {
+					console.error('Error fetching Blob URL:', error);
+				});
+
 		},
 		printPreview: function (oEvent) {
 			let sPrintQ = this.getView().byId('ns.labelprinting::DnItemsObjectPage--fe::HeaderFacetCustomContainer::RenderTemplate--printQId').getProperty('selectedKey');
@@ -46,8 +75,6 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension', 'sap/ui/model/json/JSONMod
 			// sPath = sPath.split('/')[2].replace('Items','DnItems');
 			console.log(sPath);
 			const oFunction = oModel.bindContext(`${sPath}/${sFunctionname}(...)`);
-			// oFunction.setParameter('template', "labelprint3\/labelprint3");
-
 			oFunction.setParameter('template', sTemplate);
 			oFunction.execute().then(function () {
 				const oContext = oFunction.getBoundContext();
@@ -68,25 +95,14 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension', 'sap/ui/model/json/JSONMod
 					Height: "1000px"
 				});
 				URLWhitelist.add("blob");
-
-
 				this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::CustomSubSection::PrintPreview").setVisible(true);
-
 				this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::CustomSubSection::PrintPreview--pdfViewId").setModel(oPdfmodel);
-
-
-
 			}.bind(this)).catch(err => {
 				console.log(err);
 			})
 
 
 		},
-
-
-
-
-
 		// this section allows to extend lifecycle hooks or hooks provided by Fiori elements
 		override: {
 			/**

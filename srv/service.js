@@ -29,8 +29,8 @@ const adsdetination = "ads-rest-api"; //ADS Destinbation
 const printdetination = "printServiceApi"; // Print Service destination
 const dmsdetination = "dmsApi"; // SDM destination
 const dmsRepId = "4c0973e8-a785-4789-a048-067d42f97873"; // SDM Repositary ID
-const emailuser = "zhiwei.liu02@outlook.com"; //  Sending email
-const emailpassword = "Jl654!23"; //Sending email password
+const emailuser = "emailaddress"; //  Sending email
+const emailpassword = "emaillpassword"; //Sending email password
 // const dmsPath = 'adobeservice';
 
 const defaultResilienceOptions = {
@@ -39,7 +39,10 @@ const defaultResilienceOptions = {
     circuitBreaker: true,
 };
 
+
+
 exports.ServiceApi = {
+
     render: async (body) => {
         let queryP = { templateSource: "storageName", TraceLevel: 1 };
         return await ADSRenderRequestApi.renderingPdfPost(body, queryP)
@@ -63,19 +66,13 @@ exports.ServiceApi = {
     },
     getTemplates: async () => {
         let results = [];
-
         const resp = await StoreFormsApi.formsGet().execute({
             destinationName: adsdetination,
         });
         resp.forEach((form) => {
             form.templates.forEach((temp) => {
-                // oTem.name = '';
-                // oTem.name = form.formName.concat("/").concat(temp.templateName) ;
-
-                results.push( { 'name': form.formName.concat("/").concat(temp.templateName) }
-                 
+                results.push({ 'name': form.formName.concat("/").concat(temp.templateName) }
                 );
-                // console.log(ele.formName.concat('/').concat(temp.templateName))
             });
         });
         return results;
@@ -90,15 +87,13 @@ exports.ServiceApi = {
     print: async (pdf, printB) => {
         base64.base64Decode(pdf, "render.pdf");
         const content = fs.readFileSync("render.pdf");
-
-        // console.log(content);
         let id1 = await DocumentsApi.createDmApiV1RestPrintDocuments(content)
             .addCustomHeaders({ "If-None-Match": "*" })
             .addCustomHeaders({ Scan: "false" })
             .addCustomHeaders({ "Content-Type": "application/pdf" })
             .addCustomHeaders({ "data-binary": "@/tmp/TestPage.pdf" })
             .execute({ destinationName: printdetination });
-
+        // console.log(id1)
         printB.printContents[0].objectKey = id1;
         let result = await PrintTasksApi.updateQmApiV1RestPrintTasksByItemId(
             id1,
@@ -109,70 +104,8 @@ exports.ServiceApi = {
             .execute({ destinationName: printdetination });
         console.log(result);
         return "Print task created successfully";
-
-        // .then((id1) => {
-        //     console.log(id1);
-        //     printB.printContents[0].objectKey = id1;
-        //     PrintTasksApi.updateQmApiV1RestPrintTasksByItemId(id1, printB)
-        //         .addCustomHeaders({ "If-None-Match": "*" })
-        //         .addCustomHeaders({ Scan: "false" })
-        //         .execute({ destinationName: printdetination })
-        //         .then((res) => {
-        //             console.log(res)
-        //             return 'print task created successfully';
-        //         })
-        //         .catch((err) => {
-        //             console.log(err);
-        //             return err.message;
-        //         });
-        // })
-        // .catch((err) => {
-        //     console.log(err);
-        //     return err.message;
-        // });
     },
-    //    pdfconversion: (b64con)=>{
-    //     const fn = new Promise((resolve, reject) =>{
 
-    //        let decCont = atob(b64con);
-
-    //     //    let  content = b64con.toString('utf-8');
-    //         const byteCont = new Array( decCont.length);
-    //         for (let i = 0; i <  decCont.length; i++) {
-    //             byteCont[i] = decCont.charCodeAt(i);
-    //         }
-    //          const byteArray = new Uint8Array(byteCont);
-
-    //         // decCont = atob(byteArray);
-    //         // let result = new Buffer(decCont,'utf-8');
-    //         // resolve(result);
-
-    //         // const byteCont = new Array(decCont.length);
-    //         // for (let i = 0; i < decCont.length; i++) {
-    //         //     byteCont[i] = decCont.charCodeAt(i);
-    //         // }
-
-    //         //  const byteArray = new Uint8Array(byteCont);
-    //         //  const result = this.ServiceApi.Utf8ArrayToStr(byteArray);
-    //         // //  const csss =  new String(byteArray, 'utf8');
-    //         // //  byteArray.toString('ascii')
-    //         //  const blob = new Blob([byteArray], {type: "application/pdf"});
-    //         //  const objectUrl = URL.createObjectURL(blob);
-    //          resolve(byteArray);
-    //         //  blob.stream().pipeTo()
-
-    //         //  const ab = URL.createObjectURL(blob) ;x
-    //         //  fetch(ab).then(pdf => {
-    //         //     console.log(pdf);
-    //         //     resolve(pdf.body);
-    //         // });
-
-    //         // const csss = new String([byteArray]);
-    //         // resolve(byteArray);
-    //     });
-    //     return fn;
-
-    //    },
     createDoc: (file, name, path) => {
         const fn = new Promise((resolve, reject) => {
             var formdata = new FormData();

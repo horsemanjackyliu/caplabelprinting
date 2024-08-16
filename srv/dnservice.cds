@@ -73,7 +73,8 @@ service dnservice {
 
     function getPrintQs()                                                 returns array of ObjPrintQ;
 
-    function print(pdf : LargeBinary, printQ : String, fileName : String) returns String;
+    function print(pdf : LargeString, printQ : String, fileName : String) returns String;
+    // function print(pdf : String, printQ : String, fileName : String) returns String;
 
 }
 // type ObjTemplate : { 'name' : String};

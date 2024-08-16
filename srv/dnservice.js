@@ -77,7 +77,9 @@ module.exports = cds.service.impl(async function (srv) {
     
     });
     srv.on("print", async function (req, next) {
-        const pdfInBase64 = req.data.pdf;
+        // const pdfInBase64 = req.data.pdf;
+        const pdf = req.data.pdf;
+console.log(pdf);
         const printQ = req.data.printQ;
         const fileName = req.data.fileName;
 
@@ -98,7 +100,8 @@ module.exports = cds.service.impl(async function (srv) {
         // printB.printContents[0].objectKey = '';
         console.log(printB);
 
-        const printR = await ServiceApi.print(pdfInBase64, printB);
+        // const printR = await ServiceApi.print(pdfInBase64, printB);
+        const printR = await ServiceApi.print(pdf, printB);
         req.reply(printR);
     });
 
