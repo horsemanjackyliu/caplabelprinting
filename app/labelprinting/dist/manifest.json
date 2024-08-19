@@ -173,6 +173,16 @@
                                             "visible": true,
                                             "enabled": true,
                                             "text": "PrintPreview"
+                                        },
+                                        "Print": {
+                                            "press": ".extension.ns.labelprinting.ext.controller.DnContoller.print",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Print",
+                                            "position": {
+                                                "placement": "After",
+                                                "anchor": "PrintPreview"
+                                            }
                                         }
                                     },
                                     "facets": {

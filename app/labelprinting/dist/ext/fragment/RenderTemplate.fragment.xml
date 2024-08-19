@@ -1,24 +1,28 @@
 <core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:macros="sap.fe.macros"  >
-	<HBox id="hbox1">
-						<Select id="templateId" 
+<HBox id="hboxid">
+	<HBox id="vbox1" width="500px">
+	<Label id="templateLid" text="Template" width="100px" />
+						<Select id="templateId"  width="300px"
 					forceSelection="false"
-					selectedKey="{}"
+					change=".extension.ns.labelprinting.ext.controller.DnContoller.onChange"
 					items="{
-						path: '',
-						sorter: { path: 'value' }
+						path: '/value',
+						sorter: { path: 'name' }
 					}" >
-					<core:Item id="item1" key="{value}" text="{value}" />
+					<core:Item id="item1" key="{name}" text="{name}" />
 				</Select>
 	</HBox>
-		<HBox id="hbox2">
-						<Select id="printQId"
-					forceSelection="false"
-					selectedKey="{/qname}"
+		<HBox id="vbox2" width="500px">
+		<Label id="printQL" text="Print Queu" width="100px"/>
+						<Select id="printQId" width="300px"
+					forceSelection="false" 
+					change=".extension.ns.labelprinting.ext.controller.DnContoller.onChange"
 					items="{
-						path: '',
+						path: '/value',
 						sorter: { path: 'qname' }
 					}">
 					<core:Item id="item2" key="{qname}" text="{qdescription}" />
 				</Select>
+	</HBox>
 	</HBox>
 </core:FragmentDefinition>
