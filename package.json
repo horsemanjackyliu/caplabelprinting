@@ -34,6 +34,14 @@
         "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
     },
     "cds": {
+        "log":{
+            "levels":{
+                "remote": "debug",
+                "auth": "debug",
+                "app": "debug",
+                "odata": "debug"
+            }
+        },
         "requires": {
             "API_OUTBOUND_DELIVERY_SRV_0002": {
                 "kind": "odata-v2",
