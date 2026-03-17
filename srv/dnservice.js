@@ -37,7 +37,8 @@ module.exports = cds.service.impl(async function (srv) {
         req.reply(dnApi.run(req.query));
     });
     srv.on("getTemplates", async function (req) {
-        req.reply(ServiceApi.getTemplates());
+        const results = await ServiceApi.getTemplates();
+        req.reply(results);
     });
     srv.on("getPrintQs", async function (req) {
         const results = await ServiceApi.getPrintQ();

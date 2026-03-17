@@ -12,6 +12,9 @@ target/
 # Web IDE, App Studio
 .che/
 .gen/
+.mcp.json
+CLAUDE.md
+.claude/
 
 # MTA
 *_mta_build_tmp

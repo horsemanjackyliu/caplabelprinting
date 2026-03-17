@@ -86,16 +86,11 @@ define type ObjPrintQ {
   qname : String;
   qdescription: String;
   qstatus: String(1);
-  qformatDescript: String;
+  qformat: String;
   cleanupPrd: Integer;
   techUserName: String;
   creator: String;
   createdOn: Timestamp;
-  profileEnabled: Boolean;
-  locationId:String;
-  locationIdType:String;
-
-
 }
 
 annotate dnservice with @(requires: 'Viewer') ;

@@ -69,10 +69,12 @@ exports.ServiceApi = {
         const resp = await StoreFormsApi.formsGet().execute({
             destinationName: adsdetination,
         });
+        if (!Array.isArray(resp)) {
+            return results;
+        }
         resp.forEach((form) => {
-            form.templates.forEach((temp) => {
-                results.push({ 'name': form.formName.concat("/").concat(temp.templateName) }
-                );
+            (form.templates || []).forEach((temp) => {
+                results.push({ 'name': form.formName.concat("/").concat(temp.templateName) });
             });
         });
         return results;

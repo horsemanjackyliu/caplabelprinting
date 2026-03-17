@@ -1,4 +1,4 @@
-sap.ui.define(['sap/ui/core/mvc/ControllerExtension', 'sap/ui/model/json/JSONModel', 'sap/m/MessageToast', 'sap/base/security/URLWhitelist', 'sap/ui/core/message/Message', 'sap/ui/core/message/MessageType'], function (ControllerExtension, JSONModel, MessageToast, URLWhitelist, Message, MessageType) {
+sap.ui.define(['sap/ui/core/mvc/ControllerExtension', 'sap/ui/model/json/JSONModel', 'sap/m/MessageToast', 'sap/ui/core/message/Message', 'sap/ui/core/message/MessageType'], function (ControllerExtension, JSONModel, MessageToast, Message, MessageType) {
 	'use strict';
 
 	return ControllerExtension.extend('ns.labelprinting.ext.controller.DnContoller', {
@@ -29,74 +29,48 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension', 'sap/ui/model/json/JSONMod
 		},
 		print: function (oEvent) {
 			let sPrintQ = this.getView().byId('ns.labelprinting::DnItemsObjectPage--fe::HeaderFacetCustomContainer::RenderTemplate--printQId').getProperty('selectedKey');
-			let sSource = this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::CustomSubSection::PrintPreview--pdfViewId").getSource();
 			let filename = this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::FormContainer::ItemDetails::FormElement::DataField::DeliveryDocument::Field-content").getContentDisplay().mProperties.text + this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::FormContainer::ItemDetails::FormElement::DataField::DeliveryDocumentItem::Field-content").getContentDisplay().mProperties.text + '.pdf';
-			fetch(sSource)
-				.then(response => response.blob())
-				.then(blob => {
-					// Convert the Blob to a string
-					const reader = new FileReader();
-					reader.onload = function () {
-						const dataUrl = reader.result;
-						console.log(dataUrl);
-						const base64String = dataUrl.split(',')[1];
-						console.log(base64String);
-						console.log(typeof (base64String));
-
-						let oModel = oEvent.getModel();
-						const sPrint = 'print';
-						const oFunction = oModel.bindContext(`/${sPrint}(...)`);
-						oFunction.setParameter('pdf', base64String);
-						oFunction.setParameter('fileName', filename);
-						oFunction.setParameter('printQ', sPrintQ);
-						oFunction.execute().then(function () {
-							const oContext = oFunction.getBoundContext();
-							var result = oContext.fetchValue().getResult();
-							MessageToast.show(result.value);
-						}).catch(err => {
-							console.log(err);
-						})
-					};
-					reader.readAsDataURL(blob);
-				})
-				.catch(error => {
-					console.error('Error fetching Blob URL:', error);
-				});
-
+			let oModel = oEvent.getModel();
+			const oFunction = oModel.bindContext('/print(...)');
+			oFunction.setParameter('pdf', this._sPdfBase64);
+			oFunction.setParameter('fileName', filename);
+			oFunction.setParameter('printQ', sPrintQ);
+			oFunction.execute().then(function () {
+				const oContext = oFunction.getBoundContext();
+				var result = oContext.fetchValue().getResult();
+				MessageToast.show(result.value);
+			}).catch(err => {
+				console.log(err);
+			});
 		},
 		printPreview: function (oEvent) {
-			let sPrintQ = this.getView().byId('ns.labelprinting::DnItemsObjectPage--fe::HeaderFacetCustomContainer::RenderTemplate--printQId').getProperty('selectedKey');
-			// console.log(sPrintQ);
 			let sTemplate = this.getView().byId('ns.labelprinting::DnItemsObjectPage--fe::HeaderFacetCustomContainer::RenderTemplate--templateId').getProperty('selectedKey');
-			// console.log(sTemplate);
 			let oModel = oEvent.getModel();
 			const sFunctionname = 'com.cap.labelprint.dnservice.render';
 			var sPath = oEvent.getPath();
-			// sPath = sPath.split('/')[2].replace('Items','DnItems');
 			console.log(sPath);
 			const oFunction = oModel.bindContext(`${sPath}/${sFunctionname}(...)`);
 			oFunction.setParameter('template', sTemplate);
 			oFunction.execute().then(function () {
 				const oContext = oFunction.getBoundContext();
 				var stream = oContext.getProperty('value');
-				//  console.log(stream);
 				stream = stream.replaceAll('_', '/').replaceAll('-', '+');
-				const deccont = atob(stream);
-				const byteNumbers = new Array(deccont.length);
-				for (let i = 0; i < deccont.length; i++) {
-					byteNumbers[i] = deccont.charCodeAt(i);
+				this._sPdfBase64 = stream;
+				// Convert base64 to blob and use blob URL — works in Chrome (blob: is same-origin, not blocked by CSP)
+				const byteCharacters = atob(stream);
+				const byteArray = new Uint8Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteArray[i] = byteCharacters.charCodeAt(i);
 				}
-				const byteArray = new Uint8Array(byteNumbers);
-				var blob = new Blob([byteArray], { type: "application/pdf" });
-				const pdfurl = URL.createObjectURL(blob);
-				let oPdfmodel = new JSONModel({
-					Source: pdfurl,
-					Title: 'Outbound Delivery',
-					Height: "1000px"
-				});
-				URLWhitelist.add("blob");
+				const blob = new Blob([byteArray], { type: 'application/pdf' });
+				const blobUrl = URL.createObjectURL(blob);
 				this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::CustomSubSection::PrintPreview").setVisible(true);
-				this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::CustomSubSection::PrintPreview--pdfViewId").setModel(oPdfmodel);
+				// Set src directly on the DOM iframe element after the subsection becomes visible
+				sap.ui.getCore().applyChanges();
+				var oIframe = this.getView().byId("ns.labelprinting::DnItemsObjectPage--fe::CustomSubSection::PrintPreview--pdfIframeId");
+				if (oIframe && oIframe.getDomRef()) {
+					oIframe.getDomRef().src = blobUrl;
+				}
 			}.bind(this)).catch(err => {
 				console.log(err);
 			})
